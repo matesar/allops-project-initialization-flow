@@ -74,6 +74,7 @@ Para más detalle, ver [`docs/arquitectura.md`](docs/arquitectura.md).
 .
 ├── README.md                 # Descripción general del proyecto
 ├── flows/
-│   └── <export-del-flujo>.json   # Export del flujo de Power Automate (sin secretos)
+│   └── <CPXProvisioningChild-292B8380-6DC1-F011-BBD2-6045BD9F321D>.json   # Export del flujo de Power Automate CHILD
+│   └── <CPXinitializationARParent-CFFF159C-D4CA-F011-8544-7CED8D592B6B>.json  # Export del flujo de Power Automate PARENT
 └── docs/
     └── arquitectura.md       # Documentación técnica de la arquitectura del flujo
