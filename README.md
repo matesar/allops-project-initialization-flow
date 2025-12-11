@@ -32,7 +32,7 @@ Reducir el trabajo manual al crear un nuevo proyecto CapEx:
 Flujo de alto nivel:
 
 1. **Disparador**  
-   - Envío de formulario de 3 campos en sitio de SharePoint (completado por el PM del proyecto).
+   - When an item is created... Se genera un envío de un formulario de 3 campos en sitio de SharePoint (completado por el PM del proyecto).
    - Se reciben campos como: país / compañía, ID interno del proyecto, nombre del proyecto, nombre del solicitante, complejidad, etc.
    - El flujo parent le otorga un ID único al elemento contando los elementos de la lista y sumándole 1 (con iteración incorporada para que no falle)
 
