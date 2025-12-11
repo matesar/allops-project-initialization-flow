@@ -29,8 +29,8 @@ El proceso está dividido en dos flujos de Power Automate:
 1. **Sitio ALLOPS**  
    Sitio de SharePoint/Teams donde se centralizan los proyectos CapEx.
 
-2. **Lista de solicitudes de proyecto** (alta inicial)  
-   Ejemplo de nombre: `ALLOPS CapEx Requests`  
+2. **Formulario de proyecto** (alta inicial)  
+     
    - Origen del disparador del flujo PARENT.  
    - Columnas típicas:
      - `CompanyISOCod` (País)
