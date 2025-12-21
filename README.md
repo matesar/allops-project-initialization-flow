@@ -141,8 +141,8 @@ Ver diagrama y detalles técnicos en [`docs/arquitectura.md`](docs/arquitectura.
 │   └── flows_info                                                             # Detalle de los flujos
 ├── powerapps/
 │   ├── CapexProjectInitApp.msapp          # Export de la app
-│   └── app_info.md                          # Detalle de la app
-├── assets/
-│   └── screenshots                         
-└── docs/
-    └── arquitectura.md                    # Documentación técnica de la arquitectura del flujo
+│   └── app_info.md                        # Detalle de la app
+└── assets/
+    └── screenshots
+    └── docs                         
+        └── arquitectura.md                 # Documentación técnica de la arquitectura del flujo
