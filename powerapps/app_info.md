@@ -88,12 +88,12 @@ Main expected connections:
   - The app assumes this list exposes:
     - Basic metadata (name, country, plant, FY, owner, etc.).
     - URL columns for:
-      - ProjectFolderUrl
-      - CostTrackingUrl
-      - DashboardUrl
-      - TeamsChannelUrl
-      - TaskListUrl / GanttUrl
-      - BlueFolderUrl (if used)
+      - `ProjectFolderUrl`
+      - `CostTrackingUrl`
+      - `DashboardUrl`
+      - `TeamsChannelUrl`
+      - `TaskListUrl` / `GanttUrl`
+      - `BlueFolderUrl` (if used)
 
 - **Power BI**
   - One or more dashboards already published to the Power BI service.
@@ -112,4 +112,25 @@ https://app.powerbi.com/embed
   ?dashboardId=<DashboardId>
   &tileId=<TileId>
   &filter=<TableName>/<ColumnName> eq '<CPX_ID>'
+```
 
+1. Typical pattern inside the app:
+
+When a project is selected, store its CPX ID in a variable, e.g.: Set(varCPXId, ThisItem.'CPX ID#');
+
+2. Build the tile URL dynamically:
+
+"https://app.powerbi.com/embed?dashboardId=<DashboardId>&tileId=<TileId>&filter="
+& "CapEx_x0020_list/CPX_x0020_ID_x0020__x0023_%20 eq '"
+& varCPXId
+& "'"
+
+3. Assign that expression to the Image, HtmlText or appropriate property of the control used to display the tile.
+
+Notes:
+
+The %20, _x0020_, _x0023_, etc. are the encoded characters that come from SharePoint / Power BI field names.
+
+Exact TableName and ColumnName must match the dataset used by the tile.
+
+Filtering works on tiles, not on full reports without the proper configuration
