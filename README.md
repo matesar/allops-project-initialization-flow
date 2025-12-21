@@ -1,7 +1,11 @@
-# ALLOPS – Flujo de alta de proyectos CapEx (Power Automate)
+# ALLOPS – CapEx Project Provisioning (Power Automate + Power Apps)
 
-Automatización del alta de proyectos de inversión (CapEx) en ALLOPS utilizando Power Automate, SharePoint Online y Microsoft 365.  
-El flujo crea la estructura documental base del proyecto, genera enlaces útiles (Gantt, MS Project, cost tracking, dashboard, carpeta compartida, etc.) y envía un correo automático de bienvenida al responsable del proyecto.
+La solución combina **Power Automate**, **Power Apps**, **SharePoint** y **Power BI** para:
+- Crear la estructura documental base del proyecto.
+- Centralizar los metadatos del proyecto en una lista maestra.
+- Proveer al Project Manager (PM) enlaces clave (documentos, Gantt, cost tracking, dashboard, carpeta compartida).
+- Facilitar la comunicación con un canal de Microsoft Teams.
+- Ofrecer una interfaz amigable para la creación y consulta de proyectos.
 
 Desarrollado para empresa multinacional para el uso en la región LATAM.
 
@@ -13,89 +17,116 @@ Desarrollado para empresa multinacional para el uso en la región LATAM.
 
 Reducir el trabajo manual al crear un nuevo proyecto CapEx:
 
-- Estandarizar la estructura de carpetas y archivos iniciales.
+- Estandarizar la estructura de carpetas, archivos iniciales y listas asociadas.
 - Centralizar la información del proyecto en una lista maestra de SharePoint.
 - Proveer al usuario final todos los enlaces clave en un solo correo automático.
-- Facilitar el seguimiento de costos y la planificación (Gantt / MS Project / dashboard).
-- Proveer un medio de comunicación (canal de MS Teams) para el equipo del proyecto y el área de ingeniería.
+- Facilitar el seguimiento de costos y la planificación y permitir visualización rápida de avance (Gantt / MS Project / dashboard).
+- Centralizar la comunicación del proyecto mediante un canal dedicado de Teams.
 
 ---
 
-## Tecnologías utilizadas
+## Componentes de la solución
+
+### 1. Flujos de Power Automate (`flows/`)
+
+Automatizan el alta y la preparación del proyecto:
+
+- **Parent – `CPXinitializationARParent-*.json`**  
+  - Se dispara cuando se crea un nuevo ítem en la lista de proyectos.  
+  - Valida datos básicos, asigna un **ID único** al proyecto y corre el flujo CHILD.
+
+- **Child – `CPXProvisioningChild-*.json`**  
+  - Crea la estructura documental del proyecto en SharePoint (carpetas y archivos desde plantillas).  
+  - Actualiza la lista maestra de proyectos con enlaces generados.  
+  - Crea (opcionalmente) un canal de Teams y mensaje de bienvenida.  
+  - Envía un correo automático al responsable del proyecto con todos los enlaces clave.
+
+Tecnologías utilizadas en los flujos:
 
 - **Power Automate (cloud)**
 - **SharePoint Online**
 - **Outlook 365** (envío de correos)
 - **REST API de SharePoint** (`CreateCopyJobs`) para copiar plantillas de carpetas/archivos.
 - **REST API de Microsoft Graph** para crear canal y publicaciones de bienvenida.
-  
+
+Más detalle técnico en [`flows/+info`](flows/+info).
+
+---
+
+### 2. Aplicación Power Apps (`powerapps/`)
+
+Frontend para PMs y equipo de ingeniería:
+
+- Pantallas orientadas a:
+  - **Alta de proyectos** con pocos campos obligatorios (vista simplificada).
+  - **Consulta de proyectos** y navegación a enlaces clave.
+  - Visualización embebida de **dashboards de Power BI** filtrados por ID de proyecto.
+  - Accesos a Gantt, listas de tareas, cost tracking y otros recursos.
+
+Archivos:
+- `CapexProjectInitApp.msapp` – export de la app de Power Apps.  
+- `powerapps/README.md` – detalle funcional y guía de importación (pendiente de completar).
+
+---
+
+### 3. SharePoint Online
+
+La solución asume:
+
+- **Lista maestra de proyectos** (por ejemplo, `AR Projects Master list`):
+  - Contiene metadatos del proyecto (país, compañía, ID interno, nombre, complejidad, PM, etc.).
+  - Almacena enlaces a:
+    - Carpeta documental principal
+    - Gantt / lista de tareas
+    - Archivo de cost tracking
+    - Dashboard de Power BI
+    - Carpeta compartida / “carpeta azul”
+- **Bibliotecas y plantillas**:
+  - Ubicación de las plantillas de carpetas y archivos que el flujo copia al crear el proyecto.
+
+---
+
+### 4. Power BI
+
+- Dashboards que muestran:
+  - Avance de costos (committed / spent).
+  - Estado general del CapEx.
+  - Información consolidada por proyecto.
+
+- Algunos mosaicos (tiles) son **embebidos en Power Apps** y filtrados por ID de proyecto (CPX ID) mediante parámetros en el URL del tile.
+
 ---
 
 ## Arquitectura general
 
-Flujo de alto nivel:
+El flujo de alto nivel es:
 
-1. **Disparador**  
-- Trigger: **When an item is created** en una lista de SharePoint (formulario simple de alta de proyecto).
-- El formulario lo completa el **Project Manager** o responsable del proyecto.
-- Campos a completar:
-  - Nombre del proyecto
-  - Area organizacional
-  - Año fiscal
-  - Planta
-- El flujo **PARENT** asigna un ID único al registro de cada país (contando ítems existentes y sumando 1, con lógica de reintento para evitar colisiones).
+1. **Creación de un nuevo proyecto**
+   - El PM completa un formulario (lista de SharePoint o app de Power Apps).
+   - Se crea un ítem con los datos mínimos del proyecto.
 
-2. **Inicialización de variables de configuración**  
-- Se inicializa un objeto de configuración `cfg` con:
-  - Rutas base de SharePoint donde se crearán las carpetas del proyecto.
-  - Enlace a la ficha del proyecto en el sitio ALLOPS.
-  - URLs de plantillas (Gantt, MS Project, cost tracking, etc.).
-- Se inicializa `varError` para registrar en qué parte del flujo se produce un fallo (cada bloque principal está dentro de un **Scope** para facilitar el manejo de errores).
+2. **Ejecución del flujo PARENT (Power Automate)**
+   - Asigna un ID único al ítem.
+   - Llama al flujo CHILD, pasando los datos del proyecto.
 
-3. **Creación de estructura documental**  
-- Acción HTTP a SharePoint:
-  `POST /_api/site/CreateCopyJobs?copy=true`
-- A partir de una carpeta de **templates** (estructura “modelo”), se copia:
-  - La carpeta raíz del proyecto.
-  - Subcarpetas por área (por ej. EHSQ, Ingeniería, Finanzas, etc.).
-  - Archivos base: planilla de cost tracking, plantilla de MS Project, instructivos, etc.
-- La estructura se crea en una ruta específica del proyecto, por ejemplo:  
-  `/Shared Documents/ALLOPS/CPX/<Año>/<ID_Proyecto>_<Nombre>/…`
+3. **Provisionamiento (flujo CHILD)**
+   - Crea estructura documental desde plantillas.
+   - Genera listas/gantt/cost tracking según corresponda.
+   - Actualiza la lista maestra con todos los enlaces.
 
-4. **Actualización / creación de item en lista maestra**  
-- Se actualiza o crea un registro en una **lista maestra de proyectos** (ej.: `AR Projects Master list`).
-- Se guardan:
-  - Metadatos clave del proyecto (ID, país, planta, responsable, año fiscal, monto estimado, estado inicial, etc.).
-  - Enlaces generados: carpeta raíz del proyecto, cost tracking, Gantt, dashboard, canal de Teams, etc.
-- Esta lista funciona como **fuente única de verdad** para consultar el estado y enlaces de cualquier proyecto CapEx de la región LATAM de la empresa.
-   
-5. **Creación de canal en Teams y correo automático al responsable**
+4. **Comunicación al PM**
+   - Envío de correo automático con:
+     - Resumen del proyecto.
+     - Enlace principal al proyecto en ALLOPS.
+     - Enlaces a instructivos y dashboards.
 
-- Con Microsoft Graph se crea un **canal de Teams** para el proyecto (en un Team específico de ALLOPS) y se publica un mensaje de bienvenida con los enlaces principales.
-- Se envía un correo al responsable del proyecto:
-  - Asunto dinámico (ejemplo):  
-    `@{triggerBody()?['text_3']}_@{triggerBody()?['text_1']}_@{triggerBody()?['text_4']}`  
-    > Equivale a combinar nombre del proyecto, país/compañía y un ID interno.
-  - Cuerpo HTML con:
-    - Saludo personalizado usando el **primer nombre** del PM.
-    - Enlace principal al proyecto en SharePoint.
-    - Enlaces a instructivos (RPA, sincronización MS Project, actualización del cost tracking, etc.).
-    - Enlaces directos a:
-      - Gantt / MS Project
-      - Planilla de cost tracking
-      - Dashboard de seguimiento
-      - Carpeta compartida del proyecto
-      - Carpeta “azul” (documentación accesible para áreas no técnicas, si aplica)
-        
-6. **Registro y manejo básico de errores**
+5. **Front-end de consulta**
+   - El PM y el equipo usan la app de Power Apps para:
+     - Ver detalles del proyecto.
+     - Acceder a todos los recursos asociados.
+     - Consultar dashboards filtrados por proyecto.
 
-- Cada bloque crítico (copias de SharePoint, actualización de listas, creación de canal, envío de mail) se ejecuta dentro de un **Scope**.
-- Si alguna acción falla:
-  - Se actualiza `varError` indicando en qué etapa se produjo el error.
-  - Se registran los detalles (por ejemplo en una lista de logs o en el propio ítem del proyecto).
-  - Opcionalmente, se puede enviar un correo de alerta al equipo de Ingeniería / IT.
-
-Para más detalle, ver [`docs/arquitectura.md`](docs/arquitectura.md).
+Ver diagrama y detalles técnicos en [`docs/arquitectura.md`](docs/arquitectura.md).
 
 ---
 
@@ -107,9 +138,10 @@ Para más detalle, ver [`docs/arquitectura.md`](docs/arquitectura.md).
 ├── flows/
 │   ├── <CPXProvisioningChild-292B8380-6DC1-F011-BBD2-6045BD9F321D>.json       # Export del flujo de Power Automate CHILD
 │   └── <CPXinitializationARParent-CFFF159C-D4CA-F011-8544-7CED8D592B6B>.json  # Export del flujo de Power Automate PARENT
+│   └── flows_info                                                             # Detalle de los flujos
 ├── powerapps/
 │   ├── CapexProjectInitApp.msapp          # Export de la app
-│   └── README.md                          # Detalle de la app
+│   └── app_info.md                          # Detalle de la app
 ├── assets/
 │   └── screenshots                         
 └── docs/
