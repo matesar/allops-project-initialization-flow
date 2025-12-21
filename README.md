@@ -103,11 +103,14 @@ Para más detalle, ver [`docs/arquitectura.md`](docs/arquitectura.md).
 
 ```text
 .
-├── README.md                 # Descripción general del proyecto
+├── README.md                      # Visión general de TODA la solución
 ├── flows/
-│   └── <CPXProvisioningChild-292B8380-6DC1-F011-BBD2-6045BD9F321D>.json   # Export del flujo de Power Automate CHILD
+│   ├── <CPXProvisioningChild-292B8380-6DC1-F011-BBD2-6045BD9F321D>.json       # Export del flujo de Power Automate CHILD
 │   └── <CPXinitializationARParent-CFFF159C-D4CA-F011-8544-7CED8D592B6B>.json  # Export del flujo de Power Automate PARENT
+├── powerapps/
+│   ├── CapexProjectInitApp.msapp          # Export de la app
+│   └── README.md                          # Detalle de la app
 ├── assets/
-│   └── screenshots
+│   └── screenshots                         
 └── docs/
-    └── arquitectura.md       # Documentación técnica de la arquitectura del flujo
+    └── arquitectura.md                    # Documentación técnica de la arquitectura del flujo
