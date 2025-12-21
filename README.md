@@ -150,3 +150,4 @@ See the diagram and technical details in [`docs/arquitectura.md`](docs/arquitect
 │   └── screenshots/                       # PNG/JPG screenshots used in the docs
 └── docs/
     └── arquitectura.md                    # Technical architecture documentation
+    └── solution_export
