@@ -131,3 +131,37 @@ When a project is selected, store its CPX ID in a variable, e.g.: Set(varCPXId, 
 >The %20, _x0020_, _x0023_, etc. are the encoded characters that come from SharePoint / Power BI field names.
 >Exact TableName and ColumnName must match the dataset used by the tile.
 >Filtering works on tiles, not on full reports without the proper configuration
+
+---
+
+## 6. UX details and patterns
+
+Some patterns used in the app:
+
+  - Tab navigation
+    - Implemented via a horizontal gallery with a selected item.
+    - Each tab toggles the Visible property of containers/forms for the corresponding section.
+  - Dropdowns / lookups
+    - When a column is a dropdown in the SharePoint form, the app uses:
+     .Selected.Value (or similar) to show the text value and stores the proper underlying value in the list.
+  - Clickable icons
+    - For links that are JSON-formatted in SharePoint (icons in views), the app instead shows:
+      - An Image or Icon control.
+      - OnSelect = Launch(<corresponding URL column>).
+    - This avoids exposing dummy values (like ".") that only exist for the SharePoint view formatting.
+
+---
+
+## 7. Limitations and notes
+
+  - The app assumes:
+    -The Power Automate flows are already deployed and working.
+    - The Projects Master List is the single source of truth and is updated by the flows.
+
+  - Any structural changes in:
+    - List columns,
+    - Project folder template structure,
+    - Power BI dataset/fields
+  require a corresponding update in the app formulas and bindings.
+
+For more details on the backend logic (flows and lists), see flows/flows_info and docs/architecture.md
